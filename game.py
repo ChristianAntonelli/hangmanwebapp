@@ -43,11 +43,19 @@ class HangmanGame:
     qui le teniamo dentro un oggetto, cosi' il server puo' conservarlo
     tra una richiesta e l'altra."""
 
-    def __init__(self):
-        self.word = random.choice(WORDS)
-        self.errors = 0
-        self.guessed_letters = [self.word[0], self.word[-1]]
-        self.status = "playing"  # "playing", "won" oppure "lost"
+     def __init__(self, state=None):
+        if state is None:
+            # Partita nuova
+            self.word = random.choice(WORDS)
+            self.errors = 0
+            self.guessed_letters = [self.word[0], self.word[-1]]
+            self.status = "playing"
+        else:
+            # Partita ripresa da uno stato salvato
+            self.word = state["word"]
+            self.errors = state["errors"]
+            self.guessed_letters = list(state["guessed_letters"])
+            self.status = state["status"]
 
     def masked_word(self):
         # Equivalente di current_guessed_word() dello script
@@ -101,4 +109,12 @@ class HangmanGame:
             "status": self.status,
             "art": HANGMAN_ART[self.errors],
             "word": self.word if self.status != "playing" else None,
+        }
+     def save_state(self):
+        """Tutto quello che serve per ricostruire la partita, come dizionario."""
+        return {
+            "word": self.word,
+            "errors": self.errors,
+            "guessed_letters": self.guessed_letters,
+            "status": self.status,
         }
