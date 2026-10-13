@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman · Into the Woods</title>
+    <!-- Font da Google Fonts (se sei offline il CSS usa font di riserva) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- ============ SCENARIO DEL BOSCO ============
+         Solo decorazione: nessuna immagine, e' tutto disegnato in style.css.
+         Gli strati sono in ordine dal piu' lontano al piu' vicino. -->
+    <div class="scene" aria-hidden="true">
+        <div class="moon"></div>
+        <div class="trees trees-far"></div>
+        <div class="fog"></div>
+        <div class="trees trees-mid"></div>
+        <div class="trees trees-near"></div>
+        <!-- Lucciole: ogni span e' un puntino; --x, --y = posizione, --d = durata animazione -->
+        <div class="fireflies">
+            <span style="--x: 8%;  --y: 72%; --d: 7s"></span>
+            <span style="--x: 18%; --y: 58%; --d: 9s"></span>
+            <span style="--x: 27%; --y: 80%; --d: 6s"></span>
+            <span style="--x: 41%; --y: 66%; --d: 8s"></span>
+            <span style="--x: 56%; --y: 84%; --d: 7.5s"></span>
+            <span style="--x: 68%; --y: 62%; --d: 10s"></span>
+            <span style="--x: 79%; --y: 76%; --d: 6.5s"></span>
+            <span style="--x: 91%; --y: 60%; --d: 8.5s"></span>
+        </div>
+    </div>
+
+    <!-- ============ IL GIOCO ============ -->
+    <main class="card" id="card">
+        <header>
+            <h1>Hangman</h1>
+            <p class="subtitle">Lost in the woods — guess the word before night falls</p>
+        </header>
+
+        <div class="game">
+            <!-- L'impiccato in SVG. Ogni pezzo del corpo ha data-step:
+                 script.js lo rende visibile quando gli errori arrivano a quel numero
+                 (stesso ordine dell'ASCII art dello script: testa, busto, braccia, gambe). -->
+            <svg id="hangman" viewBox="0 0 200 240" role="img" aria-label="Hangman drawing">
+                <!-- terreno -->
+                <path class="ground" d="M5 228 Q100 214 195 228" />
+                <!-- patibolo di legno -->
+                <line class="wood" x1="45" y1="225" x2="45" y2="22" />
+                <line class="wood" x1="38" y1="22" x2="150" y2="22" />
+                <line class="wood thin" x1="45" y1="62" x2="85" y2="22" />
+                <line class="rope" x1="140" y1="22" x2="140" y2="58" />
+                <!-- corpo -->
+                <circle class="part" data-step="1" cx="140" cy="76" r="18" />
+                <line   class="part" data-step="2" x1="140" y1="94"  x2="140" y2="150" />
+                <line   class="part" data-step="3" x1="140" y1="108" x2="116" y2="134" />
+                <line   class="part" data-step="4" x1="140" y1="108" x2="164" y2="134" />
+                <line   class="part" data-step="5" x1="140" y1="150" x2="120" y2="188" />
+                <line   class="part" data-step="6" x1="140" y1="150" x2="160" y2="188" />
+            </svg>
+
+            <div class="panel">
+                <!-- Le caselle delle lettere vengono create da script.js -->
+                <div id="word" class="word"></div>
+
+                <div class="lives">
+                    <span id="errors">Mistakes 0 / 6</span>
+                    <div class="bar"><div id="bar-fill" class="bar-fill"></div></div>
+                </div>
+
+                <p id="message" class="message"></p>
+
+                <!-- Tastiera: i tasti A-Z vengono creati da script.js -->
+                <div id="keyboard" class="keyboard"></div>
+
+                <!-- Form per tentare la parola intera -->
+                <form id="guess-form" class="word-form">
+                    <input id="guess-input" type="text" placeholder="Know the word? Type it here" autocomplete="off">
+                    <button type="submit" class="btn">Guess</button>
+                </form>
+
+                <button id="new-game" class="btn btn-ghost">New game</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

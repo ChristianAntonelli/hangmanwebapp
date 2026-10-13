@@ -1,0 +1,336 @@
+/* ================= VARIABILI =================
+   I colori sono definiti una volta sola qui: per cambiare tema basta toccare queste righe. */
+:root {
+    --sky-top: #0a1820;
+    --sky-mid: #16312f;
+    --sky-low: #3d5240;
+    --horizon: #7a7550;
+
+    --tree-far: #23443b;
+    --tree-mid: #142d26;
+    --tree-near: #08150f;
+
+    --card-bg: rgba(10, 24, 19, 0.62);
+    --card-border: rgba(214, 232, 200, 0.12);
+    --text: #e9efe2;
+    --text-dim: #a9b8a4;
+
+    --moss: #8fbf6a;      /* verde muschio: lettere giuste */
+    --ember: #e07a4f;     /* arancio brace: errori */
+    --firefly: #f4e48a;   /* giallo lucciola */
+    --wood: #8a6646;
+    --rope: #c9b17f;
+
+    --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Inter", system-ui, sans-serif;
+    color: var(--text);
+    /* il cielo al crepuscolo */
+    background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-mid) 40%, var(--sky-low) 72%, var(--horizon) 100%);
+    background-attachment: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    overflow-x: hidden;
+}
+
+/* ================= SCENARIO ================= */
+.scene {
+    position: fixed;
+    inset: 0;
+    z-index: -1;           /* dietro a tutto */
+    pointer-events: none;  /* non intercetta i click */
+    overflow: hidden;
+}
+
+.moon {
+    position: absolute;
+    top: 9%;
+    right: 14%;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fffbe6, #e8dfb8 60%, #cfc293);
+    box-shadow: 0 0 60px 20px rgba(255, 245, 200, 0.18), 0 0 160px 60px rgba(255, 245, 200, 0.08);
+}
+
+/* Gli alberi: un piccolo SVG di 3 pini usato come "maschera" e ripetuto in orizzontale.
+   La maschera dice DOVE colorare, background-color dice CON CHE COLORE:
+   cosi' lo stesso disegno serve per tutti e 3 gli strati, con colori diversi. */
+.trees {
+    --pines: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 100' preserveAspectRatio='none'><polygon points='24,8 37,38 30,38 43,64 33,64 47,100 1,100 15,64 5,64 18,38 11,38'/><polygon points='70,30 80,52 75,52 85,72 78,72 90,100 50,100 62,72 55,72 65,52 60,52'/><polygon points='102,16 113,42 107,42 117,66 110,66 120,100 84,100 94,66 87,66 97,42 91,42'/><rect y='96' width='120' height='4'/></svg>");
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    -webkit-mask: var(--pines) repeat-x bottom left;
+            mask: var(--pines) repeat-x bottom left;
+}
+.trees-far  { height: 46vh; background: var(--tree-far);  opacity: 0.8;
+              -webkit-mask-size: 170px 100%; mask-size: 170px 100%; }
+.trees-mid  { height: 34vh; background: var(--tree-mid);
+              -webkit-mask-size: 230px 100%; mask-size: 230px 100%;
+              -webkit-mask-position: 80px bottom; mask-position: 80px bottom; }
+.trees-near { height: 20vh; background: var(--tree-near);
+              -webkit-mask-size: 300px 100%; mask-size: 300px 100%;
+              -webkit-mask-position: 140px bottom; mask-position: 140px bottom; }
+
+/* Nebbia che scorre lentamente tra gli alberi */
+.fog {
+    position: absolute;
+    left: -50%;
+    width: 200%;
+    bottom: 18vh;
+    height: 22vh;
+    background: radial-gradient(ellipse at center, rgba(200, 215, 200, 0.18), transparent 65%);
+    filter: blur(10px);
+    animation: drift 40s linear infinite alternate;
+}
+@keyframes drift {
+    from { transform: translateX(-10%); }
+    to   { transform: translateX(10%); }
+}
+
+/* Lucciole */
+.fireflies span {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--firefly);
+    box-shadow: 0 0 10px 3px rgba(244, 228, 138, 0.6);
+    animation: float var(--d) ease-in-out infinite alternate,
+               glow calc(var(--d) / 3) ease-in-out infinite alternate;
+}
+@keyframes float {
+    from { transform: translate(0, 0); }
+    to   { transform: translate(30px, -40px); }
+}
+@keyframes glow {
+    from { opacity: 0.15; }
+    to   { opacity: 1; }
+}
+
+/* ================= CARD DEL GIOCO ================= */
+.card {
+    width: 100%;
+    max-width: 880px;
+    padding: 32px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    /* effetto "vetro smerigliato": sfoca il bosco dietro la card */
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
+
+header { text-align: center; margin-bottom: 24px; }
+
+h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 800;
+    font-size: clamp(2.2rem, 6vw, 3.4rem);
+    letter-spacing: 0.02em;
+    margin: 0;
+    color: #f3ecd2;
+    text-shadow: 0 2px 20px rgba(244, 228, 138, 0.25);
+}
+
+.subtitle { margin: 6px 0 0; color: var(--text-dim); }
+
+/* Due colonne (disegno | gioco); su schermi stretti diventano una sola */
+.game {
+    display: grid;
+    /* minmax(0, 1fr) = la colonna puo' restringersi anche sotto la larghezza del contenuto */
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 32px;
+    align-items: center;
+}
+@media (max-width: 720px) {
+    .game { grid-template-columns: minmax(0, 1fr); }
+    .tile { width: 38px; height: 48px; font-size: 1.5rem; }
+    .word { gap: 6px; }
+    .moon { width: 60px; height: 60px; }
+    #hangman { max-width: 200px; margin: 0 auto; }
+    .card { padding: 24px 18px; }
+}
+
+/* ================= IMPICCATO (SVG) ================= */
+#hangman { width: 100%; height: auto; }
+
+#hangman line, #hangman path, #hangman circle {
+    fill: none;
+    stroke-linecap: round;
+}
+.ground { stroke: #3c5a3a; stroke-width: 6; }
+.wood   { stroke: var(--wood); stroke-width: 9; }
+.wood.thin { stroke-width: 6; }
+.rope   { stroke: var(--rope); stroke-width: 3; }
+
+.part {
+    stroke: #efe6cf;
+    stroke-width: 5;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity 0.4s, transform 0.4s;
+}
+.part.visible { opacity: 1; transform: none; }
+
+/* A partita persa l'omino diventa color brace */
+.lost-game .part { stroke: var(--ember); }
+
+/* ================= PAROLA ================= */
+.word {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tile {
+    width: 46px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 3px solid rgba(214, 232, 200, 0.25);
+}
+.tile.revealed { color: #f3ecd2; border-bottom-color: var(--moss); }
+.tile.missed   { color: var(--ember); border-bottom-color: var(--ember); }
+/* animazione solo per le lettere appena scoperte */
+.tile.new { animation: pop 0.35s ease-out; }
+@keyframes pop {
+    0%   { transform: scale(0.6); opacity: 0; }
+    70%  { transform: scale(1.12); }
+    100% { transform: scale(1);   opacity: 1; }
+}
+
+/* ================= ERRORI ================= */
+.lives {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+}
+.bar {
+    flex: 1;
+    height: 8px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+.bar-fill {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #d9a54a, var(--ember));
+    transition: width 0.4s;
+}
+
+/* ================= MESSAGGIO ================= */
+.message {
+    min-height: 1.5em;
+    margin: 16px 0;
+    text-align: center;
+    font-weight: 500;
+}
+.message.won  { color: var(--moss);  font-size: 1.15rem; }
+.message.lost { color: var(--ember); font-size: 1.15rem; }
+
+/* ================= TASTIERA ================= */
+.keyboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+    gap: 6px;
+    margin-bottom: 18px;
+}
+.key {
+    height: 42px;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
+    font: 600 1rem "Inter", system-ui, sans-serif;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+.key:hover:not(:disabled) { background: rgba(143, 191, 106, 0.22); }
+.key:active:not(:disabled) { transform: scale(0.94); }
+.key:disabled { cursor: default; }
+.key.correct { background: rgba(143, 191, 106, 0.3); border-color: var(--moss); }
+.key.wrong   { background: transparent; color: rgba(233, 239, 226, 0.25); text-decoration: line-through; }
+
+/* ================= FORM E BOTTONI ================= */
+.word-form { display: flex; gap: 8px; margin-bottom: 12px; }
+
+input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--card-border);
+    background: rgba(0, 0, 0, 0.25);
+    color: var(--text);
+    font: inherit;
+}
+input::placeholder { color: rgba(233, 239, 226, 0.4); }
+input:focus { outline: 2px solid var(--moss); outline-offset: 1px; }
+
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: var(--radius);
+    background: var(--moss);
+    color: #102016;
+    font: 600 1rem "Inter", system-ui, sans-serif;
+    cursor: pointer;
+    transition: filter 0.15s;
+}
+.btn:hover:not(:disabled) { filter: brightness(1.1); }
+.btn:disabled, input:disabled { opacity: 0.4; cursor: default; }
+
+.btn-ghost {
+    width: 100%;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--card-border);
+}
+/* a fine partita il bottone "New game" pulsa per attirare l'attenzione */
+.btn-ghost.highlight {
+    background: var(--moss);
+    color: #102016;
+    animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(143, 191, 106, 0.5); }
+    50%      { box-shadow: 0 0 0 10px rgba(143, 191, 106, 0); }
+}
+
+/* La card trema quando sbagli */
+.shake { animation: shake 0.4s; }
+@keyframes shake {
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+/* Rispetta chi ha disattivato le animazioni nel sistema operativo */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+}
